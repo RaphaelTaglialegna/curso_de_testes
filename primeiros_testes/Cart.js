@@ -2,8 +2,22 @@ import find from 'lodash/find';
 import remove from 'lodash/remove';
 import Dinero from 'dinero.js';
 
+const calculatePorcentageDiscount = (amount, item) => {
+  if (item.condition?.percentage && item.quantity > item.condition.minimum) {
+    return amount.percentage(item.condition.percentage);
+  }
+  return Money({ amount: 0 });
+};
+
+const calculateQuantityDiscount = (amount, item) => {
+  if (item.condition?.quantity && item.quantity > item.condition.quantity) {
+    return amount.percentage(50);
+  }
+  return Money({ amount: 0 });
+};
+
 const Money = Dinero; // Alias para deixar o nome mais atraente.
-Money.defaultCurrency = 'BRL';
+Money.defaultitemency = 'BRL';
 Money.defaultPrecision = 2;
 export default class Cart {
   items = [];
@@ -19,15 +33,13 @@ export default class Cart {
   }
 
   getTotal() {
-    return this.items.reduce((acc, curr) => {
-      const amount = Money({ amount: curr.quantity * curr.product.price });
+    return this.items.reduce((acc, item) => {
+      const amount = Money({ amount: item.quantity * item.product.price });
       let discount = Money({ amount: 0 });
-      if (
-        curr.condition &&
-        curr.condition.percentage &&
-        curr.quantity > curr.condition.minimum
-      ) {
-        discount = amount.percentage(curr.condition.percentage);
+      if (item.condition?.percentage) {
+        discount = calculatePorcentageDiscount(amount, item);
+      } else if (item.condition?.quantity) {
+        discount = calculateQuantityDiscount(amount, item);
       }
       return acc.add(amount).subtract(discount);
     }, Money({ amount: 0 }));
