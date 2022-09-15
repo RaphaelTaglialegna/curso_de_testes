@@ -102,7 +102,7 @@ describe('Cart', () => {
   });
 
   describe('special conditions()', () => {
-    it('Should should apply percentage discont quantity above minimum is passed', () => {
+    it('Should apply percentage discont quantity above minimum is passed', () => {
       const condition = {
         percentage: 30,
         minimum: 2,
@@ -117,7 +117,22 @@ describe('Cart', () => {
       expect(cart.getTotal().getAmount()).toEqual(74315);
     });
 
-    it('Should should apply quantity discont for even quantities', () => {
+    it('Should NOT apply percentage discont quantity is below or equal minimum.', () => {
+      const condition = {
+        percentage: 30,
+        minimum: 2,
+      };
+
+      cart.add({
+        product,
+        condition,
+        quantity: 2,
+      });
+
+      expect(cart.getTotal().getAmount()).toEqual(70776);
+    });
+
+    it('Should apply quantity discont for even quantities', () => {
       const condition = {
         quantity: 2,
       };
@@ -129,6 +144,50 @@ describe('Cart', () => {
       });
 
       expect(cart.getTotal().getAmount()).toEqual(70776);
+    });
+
+    it('Should NOT apply quantity discont for even quantities when condidion is not equal', () => {
+      const condition = {
+        quantity: 2,
+      };
+
+      cart.add({
+        product,
+        condition,
+        quantity: 1,
+      });
+
+      expect(cart.getTotal().getAmount()).toEqual(35388);
+    });
+
+    it('Should apply quantity discont for odd quantities', () => {
+      const condition = {
+        quantity: 2,
+      };
+
+      cart.add({
+        product,
+        condition,
+        quantity: 5,
+      });
+
+      expect(cart.getTotal().getAmount()).toEqual(106164);
+    });
+    it('shoul recieve two or more conditions and determinate/apply the best discont. First Case', () => {
+      const condition1 = {
+        percentage: 30,
+        minimum: 2,
+      };
+      const condition2 = {
+        quantity: 2,
+      };
+
+      cart.add({
+        product,
+        condition: [condition1, condition2],
+        quantity: 5,
+      });
+      expect(cart.getTotal().getAmount()).toEqual(106164);
     });
   });
 });
