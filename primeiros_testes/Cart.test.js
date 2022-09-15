@@ -99,6 +99,20 @@ describe('Cart', () => {
       expect(cart.summary()).toMatchSnapshot();
       expect(cart.getTotal().getAmount()).toBeGreaterThan(0);
     });
+
+    it('should include formatted amount in the summary', () => {
+      cart.add({
+        product,
+        quantity: 5,
+      });
+
+      cart.add({
+        product: product2,
+        quantity: 3,
+      });
+
+      expect(cart.summary().formatted).toEqual('$3,025.56');
+    });
   });
 
   describe('special conditions()', () => {
@@ -188,6 +202,23 @@ describe('Cart', () => {
         quantity: 5,
       });
       expect(cart.getTotal().getAmount()).toEqual(106164);
+    });
+
+    it('shoul recieve two or more conditions and determinate/apply the best discont. Second Case', () => {
+      const condition1 = {
+        percentage: 80,
+        minimum: 2,
+      };
+      const condition2 = {
+        quantity: 2,
+      };
+
+      cart.add({
+        product,
+        condition: [condition1, condition2],
+        quantity: 5,
+      });
+      expect(cart.getTotal().getAmount()).toEqual(35388);
     });
   });
 });
